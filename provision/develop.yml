@@ -1,0 +1,83 @@
+---
+- hosts: all
+  become: true
+  vars:
+    - project: happylager
+  roles:
+    - role: megheaiulian.apache
+      apache_vhost_default: false
+      apache_vhosts:
+        - name: "{{ project }}"
+          path: /vagrant/public/
+          host: "{{ project }}.local"
+    - role: megheaiulian.mysql
+      mysql_databases:
+        - name: "{{ project }}"
+          state: absent
+        - name: "{{ project }}"
+          path: '/vagrant/craft/storage/backups/happylager.sql'
+      mysql_users:
+        - name: "{{project}}"
+          pass: "1234"
+          privs:
+            - "{{project}}.*:ALL"
+          hosts:
+            - localhost
+    - role: megheaiulian.php
+      php_extra_packages:
+        - name: php5-mysql
+        - name: php5-mcrypt
+  tasks:
+    - name: Upgrade
+      apt: update_cache=true upgrade=dist
+    - name: Install deps
+      apt: name={{item}} state=latest
+      with_items:
+        - git
+        - build-essential
+        - tar
+        - unzip
+    - name: Autoremove
+      shell: apt-get -y autoremove --purge
+
+    - name: Install composer
+      get_url: url=https://getcomposer.org/download/1.3.2/composer.phar dest=/usr/local/bin/composer mode=a+x
+      
+    # - name: Install Composer packages
+      # composer: command=install working_dir=/vagrant/craft/plugins/sentry prefer_dist=yes
+    
+    - name: Downlod Craft CLI
+      get_url: url=https://github.com/rsanchez/craft-cli/releases/download/0.8.1/craft.phar dest=/usr/local/bin/craft mode=a+x
+    
+    - name: Enabled php5 mcrypt mode
+      shell: php5enmod mcrypt
+      notify: restart apache
+    
+    - stat: path=/home/vagrant/n
+      register: n
+      
+    - name: Install n
+      become: no
+      shell: wget -qO- http://git.io/n-install | bash -s -- -y
+      when: n.stat.isdir is not defined
+      tags: n node npm
+
+    - name: Install latest node
+      shell: /home/vagrant/n/bin/n latest
+      tags: n node npm
+
+    - name: Install global node modules
+      npm: name={{item}} global=yes
+      with_items:
+        - gulp
+        - grunt-cli
+        - bower
+    
+    - stat: path=/vagrant/craft/app
+      register: craft
+
+    - name: Craft install
+      shell: craft install -n -t -o
+      args:
+        chdir: /vagrant
+      when: craft.stat.isdir is not defined

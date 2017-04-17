@@ -13,10 +13,10 @@ return array(
 	'server' => 'localhost',
 
 	// The database username to connect with.
-	'user' => 'root',
+	'user' => 'happylager',
 
 	// The database password to connect with.
-	'password' => '',
+	'password' => '1234',
 
 	// The name of the database to select.
 	'database' => 'happylager',
