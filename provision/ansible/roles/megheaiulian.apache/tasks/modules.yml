@@ -1,0 +1,6 @@
+---
+
+- name: Configure Apache modules
+  apache2_module: state={{ item.state | default(omit) }} name={{ item.name }}
+  with_items: "{{apache_modules}}"
+  notify: restart apache

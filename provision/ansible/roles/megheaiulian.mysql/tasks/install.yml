@@ -1,0 +1,21 @@
+---
+
+- name: Install mysql
+  apt: name={{ item }} state=latest
+  with_items:
+    - "{{ mysql_package }}-server"
+    - python-mysqldb
+  notify: restart mysql
+
+- name: Generate secure mysql credentials
+  mysql_user: name=root host={{ item }} password="{{ mysql_root_pass}}"
+  with_items: "{{ mysql_hosts }}"
+
+- name: .my.cnf for root
+  template: src=root.cnf.j2 dest=~/.my.cnf mode=0600 force=yes
+
+- name: Delete anonymous mysql user
+  mysql_user: name="" state=absent
+
+- name: Remove mysql test database
+  mysql_db: name=test state=absent

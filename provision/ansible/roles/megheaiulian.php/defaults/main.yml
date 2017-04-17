@@ -1,0 +1,12 @@
+---
+
+php_packages:
+  - name: php5
+
+php_common_packages:
+ - name: php5-cgi
+ - name: php5-gd
+ - name: php5-curl
+
+php_extra_packages:
+  - name: php5-mysql

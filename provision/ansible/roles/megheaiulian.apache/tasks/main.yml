@@ -1,0 +1,7 @@
+---
+- include: install.yml
+
+- include: modules.yml
+  when: apache_modules is defined
+
+- include: vhost.yml

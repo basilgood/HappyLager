@@ -1,0 +1,9 @@
+---
+
+- include: install.yml
+
+- include: users.yml
+  when: mysql_users is defined and (mysql_users|length)>0
+
+- include: databases.yml
+  when: mysql_databases is defined and (mysql_databases|length)>0

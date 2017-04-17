@@ -1,0 +1,13 @@
+---
+# Apache related packages to install
+# apache_packages:
+
+# Apache modules
+apache_modules:
+  - name: rewrite
+
+# Keep default apache vhost?
+apache_vhost_default: true
+
+# Apahe vhosts
+#apache_vhosts:

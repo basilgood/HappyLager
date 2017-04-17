@@ -1,0 +1,19 @@
+---
+# MySQL generated root password
+mysql_root_pass: "{{ lookup('password', 'credentials/mysql/root length=15') }}"
+
+# MySQL package: mariadb or mysql
+mysql_package: mariadb
+
+# MySQL hosts used for creating users
+mysql_hosts:
+  - "{{ ansible_hostname }}"
+  - 127.0.0.1
+  - ::1
+  - localhost
+
+# MySQL Users
+mysql_users: []
+
+#MySQL Databaes
+mysql_databases: []

@@ -1,0 +1,11 @@
+---
+
+- name: Add all MySQL users
+  mysql_user: name={{item.0.name}} password={{item.0.pass|default(item.0.name)}} state={{item.0.state|default(omit)}}  host={{item.1}} priv={{item.0.privs|join('/')}}
+  with_subelements:
+    - "{{mysql_users}}"
+    - hosts
+
+- name: .my.cnf for default user
+  template: src=default.cnf.j2 dest=~/.my.cnf mode=0600 force=yes
+  become: no

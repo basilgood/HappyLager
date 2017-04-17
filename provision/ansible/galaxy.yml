@@ -1,0 +1,5 @@
+---
+# from galaxy
+- src: megheaiulian.mysql
+- src: megheaiulian.apache
+- src: megheaiulian.php

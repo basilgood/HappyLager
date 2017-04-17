@@ -1,0 +1,31 @@
+---
+
+- name: Toggle default virtual host
+  command: "{{ (apache_vhost_default) | ternary('a2ensite','a2dissite') }} 000-default.conf"
+  when: apache_vhost_default != true or (apache_vhosts is defined and (apache_vhosts|length)>0 )
+  register: vdef
+  changed_when:  vdef.stdout.find('apache2 reload') != -1
+  notify: restart apache
+
+- name: Create ssl folder for certificate
+  file: path=/etc/apache2/ssl state=directory mode=0644
+
+- name: Create self-signed SSL certificates
+  command: openssl req -new -nodes -x509 -subj "/C=US/ST=Oregon/L=Portland/O=IT/CN=${{ansible_hostname}}" -days 3650 -keyout /etc/apache2/ssl/{{item.1.name}}.key -out /etc/apache2/ssl/{{item.1.name}}.crt -extensions v3_ca creates=/etc/apache2/ssl/{{item.1.name}}.crt
+  with_indexed_items: "{{ apache_vhosts }}"
+  when: item.1.https is defined and item.1.https == true
+  notify: restart apache
+
+- name: Add Apache virtual hosts
+  template: src=vhost.conf.j2 dest=/etc/apache2/sites-available/{{ item.1.name | default("%02d-site"|format(item.0+1)) }}.conf force=yes
+  register: vhosts_add
+  with_indexed_items: "{{ apache_vhosts }}"
+  notify: restart apache
+
+- name: Toggle Apache virtual hosts
+  command: "{{ (item.1.item.1.disable|default(False)) | ternary('a2dissite','a2ensite') }} {{ item.1.item.1.name | default('%02d-site'|format(item.0+1)) }}.conf"
+  when: item.1.changed == true
+  register: vhosts_toggle
+  changed_when:  vhosts_toggle.stdout.find('apache2 reload') != -1
+  notify: restart apache
+  with_indexed_items: "{{ vhosts_add.results }}"

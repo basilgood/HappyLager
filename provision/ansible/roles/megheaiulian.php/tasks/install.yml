@@ -1,0 +1,5 @@
+---
+
+- name: Install PHP5 and  packages
+  apt: name={{ item.name }} state={{item.state | default('latest') }}
+  with_items: "{{ php_packages|union(php_common_packages)|union(php_extra_packages) }}"
